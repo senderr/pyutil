@@ -17,12 +17,11 @@ class Cache:
         a wrapper for general request functions to save the result of a request
         to disk for fast lookup later on.
 
-        `active`: If False, all cache queries will return the request function without saving to disk.
-
         Args:
-            path ([str]): Path to store cache on disk
-            name ([str]): Name of function or operation being cached
-            args ([tuple]): Arguments passed to cached function or operation for logging purposes
+            path: Path to store cache on disk
+            name: Name of function or operation being cached
+            args: Arguments passed to cached function or operation for logging purposes
+            log_level: level to emit logs at. defaults to INFO
         """
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
@@ -79,13 +78,13 @@ def cached(
     calls with the same arguments result in a cache hit
 
     Args:
-        path (str, optional): disk path to store cached objects. Defaults to "cache".
-        refresh (bool, optional): whether or not to bypass cache lookup to force a new cache write. Defaults to False.
-        disabled (bool, optional): whether or not to bypass the cache for the function call. Defaults to False.
-        identifiers (list, optional): additional arguments that are hashed to identify a unique function call. Defaults to [].
-        is_method (bool, optional): whether or not the cached function is an object's method. Defaults to False.
-        instance_identifiers (list, optional): name of instance attributes to include in `identifiers` if `is_method` is `True`. Defaults to [].
-        log_level (str, optional): level to emit logs at. defaults to INFO
+        path: disk path to store cached objects. Defaults to "cache".
+        refresh: whether or not to bypass cache lookup to force a new cache write. Defaults to False.
+        disabled: whether or not to bypass the cache for the function call. Defaults to False.
+        identifiers: additional arguments that are hashed to identify a unique function call. Defaults to [].
+        is_method: whether or not the cached function is an object's method. Defaults to False.
+        instance_identifiers: name of instance attributes to include in `identifiers` if `is_method` is `True`. Defaults to [].
+        log_level: level to emit logs at. defaults to INFO
     """
 
     def decorator(func):
