@@ -6,6 +6,6 @@ setuptools.setup(
     author="Stefano Katsoras",
     author_email="stefano.katsoras@gmail.com",
     license="MIT",
-    packages=setuptools.find_packages("pyutil"),
+    packages=setuptools.find_packages(),
     install_requires=[""],
 )
