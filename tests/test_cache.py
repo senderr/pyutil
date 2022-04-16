@@ -86,3 +86,14 @@ def test_logs():
 
     dummy_fn(1, 2)
     dummy_fn(1, 2)
+
+def test_kwargs():
+    @cached(TMP_CACHE_PATH, log_level="INFO", identifiers=[4, 5])
+    def dummy_fn(a, b, **kwargs):
+        return a + b
+    
+    dummy_fn(1, 2, cache_kwargs={"disabled": True})
+    assert items_in_cache() == 0
+    
+    dummy_fn(1, 2, disabled=True)
+    assert items_in_cache() == 0
