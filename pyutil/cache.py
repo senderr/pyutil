@@ -67,11 +67,11 @@ class Cache:
 
 def cached(
     path: str = "cache",
+    is_method: bool = False,
+    instance_identifiers: list = [],
     refresh: bool = False,
     disabled: bool = False,
     identifiers: list = [],
-    is_method: bool = False,
-    instance_identifiers: list = [],
     log_level: str = "INFO",
 ):
     """Save the result of the decorated function in a cache. Function arguments are hashed such that subsequent
@@ -142,21 +142,19 @@ def cached(
                 hashable_args = args
                 _identifiers = identifiers
 
+            actual_args = hashable_args
             hashable_args = [*hashable_args, *_identifiers]
 
             key = hash_item([hash_item(i) for i in [hashable_args, kwargs]])
 
             _func_kwargs = (f"{k}={v}" for k, v in kwargs.items())
-            _identifiers_str = (
-                (f"| cache_identifiers=({', '.join(str(id) for id in _identifiers)})",) if _identifiers else ()
-            )
             return Cache(
                 params["path"],
                 name,
                 (
-                    *hashable_args,
+                    *actual_args,
+                    *(f"(id:{i})" for i in _identifiers),
                     *_func_kwargs,
-                    *_identifiers_str,
                 ),
                 params["log_level"],
             ).query(
