@@ -17,6 +17,7 @@ def hash_item(i):
     except AttributeError:
         logger.warning(f"Unable to hash the objects class, using hash of class name instead")
         hash = hashlib.md5(pickle.dumps(i.__class__.__name__)).hexdigest()
+    logger.info(f"Hashing item: {i} --> {hash}")
     return hash
 
 
