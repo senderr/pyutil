@@ -145,7 +145,6 @@ def cached(
             actual_args = hashable_args
             hashable_args = [*hashable_args, *_identifiers]
 
-            print(hashable_args, kwargs)
             key = hash_item([hash_item(i) for i in [hashable_args, kwargs]])
 
             _func_kwargs = (f"{k}={v}" for k, v in kwargs.items())
