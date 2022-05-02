@@ -25,7 +25,6 @@ class Cache:
         """
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
-        logger.warning(f"Cache path: {path}")
         self.path = path
         self.name = name
         self.args = f"({', '.join(str(arg) for arg in args)})"
@@ -54,11 +53,11 @@ class Cache:
             return query_fn(*query_fn_args, **query_fn_kwargs)
 
         if not refresh and self.search(key) is True:
-            self.log(f"Using cached value in call to {self.name}{self.args} | key={key}")
+            self.log(f"Using cached value in call to {self.name}{self.args} | key={key} ({self.path})")
             return load_fn(os.path.join(self.path, key), *load_fn_args, **load_fn_kwargs)
         else:
             data = query_fn(*query_fn_args, **query_fn_kwargs)
-            self.log(f"Saving cached value in call to {self.name}{self.args} | key={key}")
+            self.log(f"Saving cached value in call to {self.name}{self.args} | key={key} ({self.path})")
             save_fn(data, os.path.join(self.path, key), *save_fn_args, **save_fn_kwargs)
             return data
 
