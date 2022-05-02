@@ -66,7 +66,7 @@ class Cache:
 
 
 def cached(
-    path: str = "cache",
+    path: str = "/tmp/cache",
     is_method: bool = False,
     instance_identifiers: list = [],
     refresh: bool = False,
@@ -124,7 +124,6 @@ def cached(
                         del kwargs[key]
                     except KeyError:
                         pass
-
             try:
                 name = func.__name__
             except AttributeError:
