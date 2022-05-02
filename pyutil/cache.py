@@ -25,6 +25,7 @@ class Cache:
         """
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
+        logger.warning(f"Cache path: {path}")
         self.path = path
         self.name = name
         self.args = f"({', '.join(str(arg) for arg in args)})"
