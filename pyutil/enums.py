@@ -16,7 +16,10 @@ class EnumBase(Enum):
 
 class NameEnumMeta(type):
     def __len__(self):
-        return self.__len__()
+        return len(self._values())
+    
+    def __iter__(self):
+        return self._values().__iter__()
 
     def __init__(self, name, bases, dict):
         self.__reserved_fields__ = ["_names", "_values", "_reverse_lookup"]
@@ -42,7 +45,3 @@ class NameEnum(str, metaclass=NameEnumMeta):
             if v == value:
                 return k
         raise ValueError(f"{value} not in {cls.__name__}")
-
-    @classmethod
-    def __len__(cls):
-        return len(cls._names())
