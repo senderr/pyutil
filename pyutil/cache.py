@@ -1,4 +1,5 @@
 import functools
+import inspect
 import logging
 import os
 
@@ -6,7 +7,7 @@ import pandas as pd
 
 from pyutil.dicts import sort_dict
 from pyutil.hashing import hash_item
-from pyutil.misc import get_full_kwargs
+from pyutil.misc import get_full_kwargs, get_named_args
 
 logger = logging.getLogger(__name__)
 
@@ -67,24 +68,28 @@ class Cache:
 
 def cached(
     path: str = "/tmp/cache",
+    disabled: bool = False,
+    refresh: bool = False,
+    log_level: str = "INFO",
+    identifiers: list = [],
+    path_seperators: list = [],
     is_method: bool = False,
     instance_identifiers: list = [],
-    refresh: bool = False,
-    disabled: bool = False,
-    identifiers: list = [],
-    log_level: str = "INFO",
+    instance_path_seperators: list = [],
 ):
     """Save the result of the decorated function in a cache. Function arguments are hashed such that subsequent
     calls with the same arguments result in a cache hit
 
     Args:
         path: disk path to store cached objects. Defaults to "cache".
-        refresh: whether or not to bypass cache lookup to force a new cache write. Defaults to False.
         disabled: whether or not to bypass the cache for the function call. Defaults to False.
+        refresh: whether or not to bypass cache lookup to force a new cache write. Defaults to False.
+        log_level: level to emit logs at. defaults to INFO
         identifiers: additional arguments that are hashed to identify a unique function call. Defaults to [].
+        path_seperators: list of argument names to use as path seperators after `path`
         is_method: whether or not the cached function is an object's method. Defaults to False.
         instance_identifiers: name of instance attributes to include in `identifiers` if `is_method` is `True`. Defaults to [].
-        log_level: level to emit logs at. defaults to INFO
+        instance_path_seperators: name of instance attributes to include in `path_seperators` if `is_method` is `True`. Defaults to [].
     """
 
     def decorator(func):
@@ -94,16 +99,24 @@ def cached(
                 return func(*args, **kwargs)
 
             kwargs = sort_dict(get_full_kwargs(func, kwargs))
-
+            named_args = get_named_args(func, args)
+            
+            all_args = {
+                **kwargs,
+                **named_args
+            }
+            
             # Parameters inherited from decorator generator call
             params = {
                 "path": path,
-                "is_method": is_method,
-                "instance_identifier": instance_identifiers,
-                "refresh": refresh,
                 "disabled": disabled,
-                "additional_args": identifiers,
+                "refresh": refresh,
                 "log_level": log_level,
+                "identifiers": identifiers,
+                "path_seperators": path_seperators,
+                "is_method": is_method,
+                "instance_identifiers": instance_identifiers,
+                "instance_path_seperators": instance_path_seperators,
             }
 
             # Update params using override passed in through calling function
@@ -124,26 +137,30 @@ def cached(
                         del kwargs[key]
                     except KeyError:
                         pass
+            
             try:
                 name = func.__name__
             except AttributeError:
                 name = "function"
 
-            if is_method:
+            # Parse identifiers and path seperators
+            if params["is_method"]:
                 # remove self argument
                 instance = args[0]
                 hashable_args = args[1:]
-                if instance_identifiers:
-                    _identifiers = [*identifiers, *[getattr(instance, id) for id in instance_identifiers]]
-                else:
-                    _identifiers = identifiers
+                _identifiers = params["identifiers"] + [getattr(instance, id) for id in params["instance_identifiers"]]
+                _path_seperators = params["path_seperators"] + [getattr(instance, ps) for ps in params["instance_path_seperators"]]
             else:
                 hashable_args = args
-                _identifiers = identifiers
+                _identifiers = params["identifiers"]
+                _path_seperators = params["path_seperators"]
 
+            # Add path seperators
+            params["path"] = os.path.join(params["path"], *[all_args[ps] for ps in _path_seperators])
+            
             actual_args = hashable_args
             hashable_args = [*hashable_args, *_identifiers]
-
+            
             key = hash_item([hash_item(i) for i in [hashable_args, kwargs]])
 
             _func_kwargs = (f"{k}={v}" for k, v in kwargs.items())
