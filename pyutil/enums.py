@@ -22,6 +22,11 @@ class EnumBase(Enum):
         return self.name < other.name
 
 
+class RemovedAttribute:
+    def __get__(self, instance, owner):
+        raise AttributeError
+
+
 class NameEnumMeta(type):
     def __len__(self):
         return len(self._values())
@@ -29,9 +34,18 @@ class NameEnumMeta(type):
     def __iter__(self):
         return self._values().__iter__()
 
+    def __delattr__(self, __name: str) -> None:
+        if hasattr(self, __name) and __name in self.__fields__:
+            del self.__fields__[__name]
+            setattr(self, __name, RemovedAttribute())
+        else:
+            super().__delattr__(__name)
+
     def __init__(self, name, bases, dict):
         if len(bases) > 0 and issubclass(bases[0], NameEnum) and bases[0].__name__ != "NameEnum":
             parent_fields = bases[0].__fields__
+            for k, v in parent_fields.items():
+                setattr(self, k, v)
         else:
             parent_fields = {}
 
@@ -40,6 +54,8 @@ class NameEnumMeta(type):
         for k in dict.keys():
             if not k.startswith("__") and k not in self.__reserved_fields__:
                 self.__fields__[k] = dict[k]
+
+        super().__init__(name, bases, dict)
 
 
 class NameEnum(str, metaclass=NameEnumMeta):
