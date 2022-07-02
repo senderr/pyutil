@@ -100,12 +100,9 @@ def cached(
 
             kwargs = sort_dict(get_full_kwargs(func, kwargs))
             named_args = get_named_args(func, args)
-            
-            all_args = {
-                **kwargs,
-                **named_args
-            }
-            
+
+            all_args = {**kwargs, **named_args}
+
             # Parameters inherited from decorator generator call
             params = {
                 "path": path,
@@ -137,7 +134,7 @@ def cached(
                         del kwargs[key]
                     except KeyError:
                         pass
-            
+
             try:
                 name = func.__name__
             except AttributeError:
@@ -149,18 +146,20 @@ def cached(
                 instance = args[0]
                 hashable_args = args[1:]
                 _identifiers = params["identifiers"] + [getattr(instance, id) for id in params["instance_identifiers"]]
-                _path_seperators = params["path_seperators"] + [getattr(instance, ps) for ps in params["instance_path_seperators"]]
+                _path_seperators = [all_args[ps] for ps in params["path_seperators"]] + [
+                    getattr(instance, ps) for ps in params["instance_path_seperators"]
+                ]
             else:
                 hashable_args = args
                 _identifiers = params["identifiers"]
-                _path_seperators = params["path_seperators"]
+                _path_seperators = [all_args[ps] for ps in params["path_seperators"]]
 
             # Add path seperators
-            params["path"] = os.path.join(params["path"], *[all_args[ps] for ps in _path_seperators])
-            
+            params["path"] = os.path.join(params["path"], *_path_seperators)
+
             actual_args = hashable_args
             hashable_args = [*hashable_args, *_identifiers]
-            
+
             key = hash_item([hash_item(i) for i in [hashable_args, kwargs]])
 
             _func_kwargs = (f"{k}={v}" for k, v in kwargs.items())
