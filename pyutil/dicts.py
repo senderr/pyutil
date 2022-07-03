@@ -30,16 +30,17 @@ def sort_dict(d, reverse=False) -> dict:
             new_d[key] = d[key]
     return new_d
 
-def format_dict(dict_, ind=''):
+
+def format_dict(dict_, ind=""):
     """Return string representation of dict with correct indentation"""
-    out = ''
+    out = ""
     for k, v in dict_.items():
-        out += ind + str(k) + ': '
+        out += ind + str(k) + ": "
         if isinstance(v, dict):
-            out += '{ \n' + format_dict(v, ind + '    ')
+            out += "{ \n" + format_dict(v, ind + "    ")
         else:
-            out += str(v) + '\n'
+            out += str(v) + "\n"
 
     if len(ind) > 0:
-        out += '}\n'
+        out += "}\n"
     return out
