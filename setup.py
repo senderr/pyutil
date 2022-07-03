@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="pyutil",
-    version="1.0.0",
+    version="1.0.1",
     author="Stefano Katsoras",
     author_email="stefano.katsoras@gmail.com",
     license="MIT",
