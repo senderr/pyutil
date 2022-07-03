@@ -29,10 +29,10 @@ class RemovedAttribute:
 
 class NameEnumMeta(type):
     def __len__(self):
-        return len(self._values())
+        return len(set(self._values()))
 
     def __iter__(self):
-        return self._values().__iter__()
+        return set(self._values()).__iter__()
 
     def __delattr__(self, __name: str) -> None:
         if hasattr(self, __name) and __name in self.__fields__:
@@ -67,7 +67,7 @@ class NameEnum(str, metaclass=NameEnumMeta):
 
     @classmethod
     def _values(cls):
-        return list(cls.__fields__.values())
+        return list(set(cls.__fields__.values()))
 
     @classmethod
     def _reverse_lookup(cls, value):
