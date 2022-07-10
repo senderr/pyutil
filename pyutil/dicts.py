@@ -31,11 +31,12 @@ def sort_dict(d, reverse=False) -> dict:
     return new_d
 
 
-def format_dict(dict_, ind=""):
+def format_dict(dict_, ind="    ", trail="_"):
     """Return string representation of dict with correct indentation"""
-    out = ""
+    out = "{\n"
+    n = max(len(str(x)) for x in dict_.keys())
     for k, v in dict_.items():
-        out += ind + str(k) + ": "
+        out += ind + f"{k}:".ljust(n + 2, trail)
         if isinstance(v, dict):
             out += "{ \n" + format_dict(v, ind + "    ")
         else:
